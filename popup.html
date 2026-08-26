@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quick Flashcard Maker</title>
+  <style>
+    body {
+      width: 340px;
+      margin: 0;
+      padding: 12px;
+      font-family: system-ui, sans-serif;
+      background: #101828;
+      color: #f2f4f7;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    h1 { font-size: 13px; margin: 0; color: #98a2b3; font-weight: 600; flex: 1; }
+    .tool-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #f2f4f7;
+      background: #1d2939;
+      border: 1px solid #344054;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .tool-btn:hover:not(:disabled) { background: #344054; }
+    .tool-btn:disabled { opacity: 0.35; cursor: default; }
+    #undoBtn { color: #fdb022; border-color: #5c4413; }
+
+    #list { max-height: 400px; overflow-y: auto; }
+    .card {
+      background: #1d2939;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      border-left: 3px solid #7cd4fd;
+    }
+    .card.done { border-left-color: #32d583; opacity: 0.75; }
+    .card.editing { cursor: default; border-left-color: #fdb022; }
+    .row { display: flex; align-items: flex-start; gap: 8px; }
+    .row .q { flex: 1; }
+    .q { font-size: 14px; font-weight: 600; line-height: 1.35; }
+    .a { font-size: 13px; color: #d0d5dd; margin-top: 6px; line-height: 1.4; }
+    .hint { font-size: 11px; color: #667085; margin-top: 6px; font-style: italic; }
+    .empty { font-size: 13px; color: #667085; line-height: 1.5; text-align: center; padding: 20px 8px; }
+
+    .src-btn {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #667085;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline;
+      font-family: inherit;
+    }
+    .src-btn:hover { color: #7cd4fd; }
+
+    .del-btn {
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      padding: 0;
+      font-size: 16px; line-height: 1;
+      color: #667085;
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .del-btn:hover { color: #fda29b; background: #101828; }
+
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 8px;
+      padding: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      color: #f2f4f7;
+      background: #101828;
+      border: 1px solid #344054;
+      border-radius: 6px;
+      resize: vertical;
+      min-height: 60px;
+    }
+    .save-btn {
+      margin-top: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #101828;
+      background: #7cd4fd;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .save-btn:hover { background: #36bffa; }
+
+        .tool-btn.add {
+      color: #7cd4fd;
+      border-color: #164e63;
+      font-size: 15px;
+      line-height: 1;
+      padding: 3px 9px;
+    }
+    .q-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: #f2f4f7;
+      background: #101828;
+      border: 1px solid #344054;
+      border-radius: 6px;
+      resize: vertical;
+      min-height: 44px;
+    }
+  </style>
+</head>
+<body>
+    <header>
+    <h1>ENTRIES</h1>
+    <button id="addBtn" class="tool-btn add" title="Add custom entry">+</button>
+    <button id="undoBtn" class="tool-btn" disabled>Undo delete</button>
+    <button id="exportBtn" class="tool-btn">Export as Flashcard</button>
+  </header>
+  <div id="list">Loading…</div>
+  <script src="popup.js"></script>
+</body>
+</html>
