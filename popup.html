@@ -126,6 +126,49 @@
       resize: vertical;
       min-height: 44px;
     }
+
+        .tool-btn.challenge { color: #d6bbfb; border-color: #4a1fb8; }
+
+    #challenge { padding: 4px 0; }
+    .ch-progress {
+      font-size: 11px;
+      color: #667085;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .ch-card {
+      background: #1d2939;
+      border-radius: 8px;
+      padding: 20px 16px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-left: 3px solid #d6bbfb;
+    }
+    .ch-front { font-size: 16px; font-weight: 600; line-height: 1.4; }
+    .ch-back {
+      font-size: 14px;
+      color: #d0d5dd;
+      line-height: 1.5;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #344054;
+      white-space: pre-wrap;
+    }
+    .ch-hint {
+      font-size: 11px;
+      color: #667085;
+      text-align: center;
+      margin-top: 10px;
+      font-style: italic;
+    }
+    .ch-done { font-size: 15px; text-align: center; padding: 40px 12px; color: #98a2b3; }
+
+        header.in-challenge .tool-btn:not(.challenge) {
+      opacity: 0.35;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -136,8 +179,10 @@
     <button id="exportBtn" class="tool-btn" title="Export as .tsv (Tab-Separated Values) format">Export</button>
     <button id="importBtn" class="tool-btn" title="Import entries from a .tsv file">Import</button>
     <input type="file" id="fileInput" accept=".tsv,.txt" hidden>
+    <button id="challengeBtn" class="tool-btn challenge" title="Review entries as flashcards">Challenge</button>
   </header>
   <div id="list">Loading…</div>
+  <div id="challenge" hidden></div>
   <script src="popup.js"></script>
 </body>
 </html>

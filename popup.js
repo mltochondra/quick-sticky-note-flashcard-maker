@@ -4,6 +4,14 @@ const exportBtn = document.getElementById("exportBtn");
 const addBtn = document.getElementById("addBtn");
 const importBtn = document.getElementById("importBtn");
 const fileInput = document.getElementById("fileInput");
+const challengeBtn = document.getElementById("challengeBtn");
+const challengeView = document.getElementById("challenge");
+const header = document.querySelector("header");
+
+let deck = [];
+let deckIndex = 0;
+let flipped = false;
+let inChallenge = false;
 
 importBtn.addEventListener("click", () => fileInput.click());
 fileInput.addEventListener("change", handleImport);
@@ -29,6 +37,7 @@ function escapeHTML(str) {
 function render() {
   undoBtn.disabled = deletedStack.length === 0;
   exportBtn.disabled = cards.length === 0;
+  challengeBtn.disabled = !cards.some(c => c.question && c.answer);
 
   if (cards.length === 0) {
     list.innerHTML = `<p class="empty">No entries yet.<br>Highlight text on any page,
@@ -234,3 +243,76 @@ function parseTSV(text) {
     })
     .filter(c => c.question || c.answer);
 }
+
+challengeBtn.addEventListener("click", () => {
+  inChallenge ? exitChallenge() : startChallenge();
+});
+
+function startChallenge() {
+  // A card with no answer has no back — nothing to review.
+  deck = cards.filter(c => c.question && c.answer);
+  if (deck.length === 0) return;
+
+  // Fisher-Yates shuffle.
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+
+  deckIndex = 0;
+  flipped = false;
+  inChallenge = true;
+
+    list.hidden = true;
+  challengeView.hidden = false;
+  challengeBtn.textContent = "Exit";
+  header.classList.add("in-challenge");   // ← was the [addBtn, undoBtn, ...] line
+
+  renderChallenge();
+}
+
+function exitChallenge() {
+  inChallenge = false;
+  list.hidden = false;
+  challengeView.hidden = true;
+  challengeBtn.textContent = "Challenge";
+  header.classList.remove("in-challenge");
+  render();
+}
+
+function renderChallenge() {
+  if (deckIndex >= deck.length) {
+    challengeView.innerHTML = `
+      <div class="ch-done">Done — ${deck.length} reviewed.<br>
+        <span class="ch-hint">Space to restart · Esc to exit</span></div>`;
+    return;
+  }
+
+  const card = deck[deckIndex];
+  challengeView.innerHTML = `
+    <div class="ch-progress">${deckIndex + 1} / ${deck.length}</div>
+    <div class="ch-card">
+      <div class="ch-front">${escapeHTML(card.question)}</div>
+      ${flipped ? `<div class="ch-back">${escapeHTML(card.answer)}</div>` : ""}
+    </div>
+    <div class="ch-hint">Space — ${flipped ? "next card" : "reveal answer"}</div>`;
+}
+
+document.addEventListener("keydown", (e) => {
+  if (!inChallenge) return;
+
+  if (e.key === "Escape") { exitChallenge(); return; }
+  if (e.key !== " ") return;
+
+  e.preventDefault();   // space scrolls otherwise
+
+  if (deckIndex >= deck.length) { startChallenge(); return; }
+
+  if (flipped) {
+    deckIndex++;
+    flipped = false;
+  } else {
+    flipped = true;
+  }
+  renderChallenge();
+});

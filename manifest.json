@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Quick Sticky Note & Flashcard Maker",
-    "version": "1.6",
+    "version": "1.7",
     "description": "Quickly select a text and save it on your browser instead of your brain",
     "action": {
         "default_popup": "popup.html",
