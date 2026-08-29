@@ -7,6 +7,28 @@ const fileInput = document.getElementById("fileInput");
 const challengeBtn = document.getElementById("challengeBtn");
 const challengeView = document.getElementById("challenge");
 const header = document.querySelector("header");
+const deleteAllBtn = document.getElementById("deleteAllBtn");
+
+deleteAllBtn.addEventListener("click", deleteAll);
+
+async function deleteAll() {
+  if (cards.length === 0) return;
+
+  const count = cards.length;
+  deletedStack.push({ bulk: cards, index: 0 });
+  cards = [];
+  editingId = null;
+
+  await chrome.storage.local.set({ cards });
+  render();
+
+  deleteAllBtn.textContent = `Deleted ${count}`;
+  deleteAllBtn.disabled = false;   // render() just disabled it — keep it readable
+  setTimeout(() => {
+    deleteAllBtn.textContent = "Delete All";
+    render();
+  }, 3000);
+}
 
 let deck = [];
 let deckIndex = 0;
@@ -38,6 +60,7 @@ function render() {
   undoBtn.disabled = deletedStack.length === 0;
   exportBtn.disabled = cards.length === 0;
   challengeBtn.disabled = !cards.some(c => c.question && c.answer);
+  deleteAllBtn.disabled = cards.length === 0;
 
   if (cards.length === 0) {
     list.innerHTML = `<p class="empty">No entries yet.<br>Highlight text on any page,
@@ -168,8 +191,12 @@ async function undoDelete() {
   const last = deletedStack.pop();
   if (!last) return;
 
-  const at = Math.min(last.index, cards.length);
-  cards.splice(at, 0, last.card);
+  if (last.bulk) {
+    cards = [...last.bulk, ...cards];
+  } else {
+    const at = Math.min(last.index, cards.length);
+    cards.splice(at, 0, last.card);
+  }
 
   await chrome.storage.local.set({ cards });
   render();

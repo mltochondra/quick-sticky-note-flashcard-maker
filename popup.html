@@ -5,7 +5,7 @@
   <title>Quick Flashcard Maker</title>
   <style>
     body {
-      width: 340px;
+      width: 480px;
       margin: 0;
       padding: 12px;
       font-family: system-ui, sans-serif;
@@ -165,21 +165,26 @@
     }
     .ch-done { font-size: 15px; text-align: center; padding: 40px 12px; color: #98a2b3; }
 
-        header.in-challenge .tool-btn:not(.challenge) {
+    header.in-challenge .tool-btn:not(.challenge) {
       opacity: 0.35;
       pointer-events: none;
     }
+
+    .tool-btn.danger { color: #fda29b; border-color: #7a271a; }
+    .tool-btn.danger:hover:not(:disabled) { background: #55160c; }
+    header { flex-wrap: wrap; row-gap: 6px; }
   </style>
 </head>
 <body>
     <header>
     <h1>ENTRIES</h1>
     <button id="addBtn" class="tool-btn add" title="Add custom entry">+</button>
-    <button id="undoBtn" class="tool-btn" title="Undo delete" disabled>Undo</button>
-    <button id="exportBtn" class="tool-btn" title="Export as .tsv (Tab-Separated Values) format">Export</button>
     <button id="importBtn" class="tool-btn" title="Import entries from a .tsv file">Import</button>
+    <button id="exportBtn" class="tool-btn" title="Export as .tsv (Tab-Separated Values) format">Export</button>
     <input type="file" id="fileInput" accept=".tsv,.txt" hidden>
     <button id="challengeBtn" class="tool-btn challenge" title="Review entries as flashcards">Challenge</button>
+    <button id="undoBtn" class="tool-btn" title="Undo delete" disabled>Undo</button>
+    <button id="deleteAllBtn" class="tool-btn danger" title="Delete all entries">Delete All</button>
   </header>
   <div id="list">Loading…</div>
   <div id="challenge" hidden></div>
