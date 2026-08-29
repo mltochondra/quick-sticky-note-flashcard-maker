@@ -2,6 +2,11 @@ const list = document.getElementById("list");
 const undoBtn = document.getElementById("undoBtn");
 const exportBtn = document.getElementById("exportBtn");
 const addBtn = document.getElementById("addBtn");
+const importBtn = document.getElementById("importBtn");
+const fileInput = document.getElementById("fileInput");
+
+importBtn.addEventListener("click", () => fileInput.click());
+fileInput.addEventListener("change", handleImport);
 
 let cards = [];
 let editingId = null;
@@ -185,4 +190,47 @@ function exportCards() {
 
 function clean(text) {
   return (text || "").replace(/[\t\n\r]+/g, " ").trim();
+}
+
+async function handleImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const text = await file.text();
+  const imported = parseTSV(text);
+
+  // Skip entries already present — question+answer is the identity.
+  const seen = new Set(cards.map(c => `${c.question}\u0000${c.answer}`));
+  const fresh = imported.filter(c => !seen.has(`${c.question}\u0000${c.answer}`));
+
+  cards = [...fresh, ...cards];
+  await chrome.storage.local.set({ cards });
+  render();
+
+  // Reset, or re-selecting the same file fires no change event.
+  fileInput.value = "";
+
+  const skipped = imported.length - fresh.length;
+  importBtn.textContent = `+${fresh.length}${skipped ? ` (${skipped} dup)` : ""}`;
+  setTimeout(() => { importBtn.textContent = "Import"; }, 2000);
+}
+
+function parseTSV(text) {
+  let counter = 0;
+
+  return text
+    .split(/\r?\n/)
+    .filter(line => line.trim())
+    .map(line => {
+      const [question = "", answer = "", source = ""] = line.split("\t");
+      return {
+        // Date.now() alone collides — a loop runs inside one millisecond.
+        id: Date.now() + (counter++),
+        question: question.trim(),
+        answer: answer.trim(),
+        source: source.trim() || null,
+        created: new Date().toISOString()
+      };
+    })
+    .filter(c => c.question || c.answer);
 }
