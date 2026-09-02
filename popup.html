@@ -2,23 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Quick Flashcard Maker</title>
+  <title>Quick Sticky Note &amp; Flashcard Maker</title>
   <style>
+    /* ========== Layout shell ==========
+       Fixed height + flex column. #list takes the remaining space and
+       scrolls internally; overflow:hidden on body stops the whole popup
+       from scrolling behind it. Chrome caps popups at 800x600.          */
+
     body {
       width: 480px;
+      height: 600px;
+      box-sizing: border-box;
       margin: 0;
       padding: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
       font-family: system-ui, sans-serif;
       background: #101828;
       color: #f2f4f7;
     }
+
     header {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
+      row-gap: 6px;
+      flex-shrink: 0;
       margin-bottom: 10px;
     }
-    h1 { font-size: 13px; margin: 0; color: #98a2b3; font-weight: 600; flex: 1; }
+
+    h1 {
+      margin: 0;
+      margin-right: auto;      /* pushes buttons right without claiming width */
+      font-size: 13px;
+      font-weight: 600;
+      color: #98a2b3;
+    }
+
+    #list {
+      flex: 1;
+      min-height: 0;           /* flex children won't shrink below content without this */
+      overflow-y: auto;
+    }
+
+
+    /* ========== Header buttons ========== */
+
     .tool-btn {
       padding: 4px 10px;
       font-size: 11px;
@@ -29,60 +60,137 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
     .tool-btn:hover:not(:disabled) { background: #344054; }
     .tool-btn:disabled { opacity: 0.35; cursor: default; }
+
+    .tool-btn.add {
+      padding: 3px 9px;
+      font-size: 15px;
+      line-height: 1;
+      color: #7cd4fd;
+      border-color: #164e63;
+    }
+
+    .tool-btn.challenge { color: #d6bbfb; border-color: #4a1fb8; }
+
+    .tool-btn.danger { color: #fda29b; border-color: #7a271a; }
+    .tool-btn.danger:hover:not(:disabled) { background: #55160c; }
+
     #undoBtn { color: #fdb022; border-color: #5c4413; }
 
-    #list { max-height: 530px; overflow-y: auto; }
+
+    /* ========== Title bar ========== */
+
+    #titleBar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      margin-bottom: 10px;
+      padding: 8px;
+      background: #1d2939;
+      border-radius: 6px;
+    }
+
+    #setTitle {
+      flex: 1;
+      padding: 6px 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: #f2f4f7;
+      background: #101828;
+      border: 1px solid #344054;
+      border-radius: 6px;
+    }
+
+    #setTitle:focus { outline: none; border-color: #7cd4fd; }
+    #titleBar .ext { font-size: 12px; color: #667085; }
+
+
+    /* ========== Entry cards ==========
+       Border colour encodes state: blue = unanswered, green = answered,
+       amber = being edited.                                             */
+
     .card {
+      margin-bottom: 8px;
+      padding: 10px 12px;
       background: #1d2939;
       border-radius: 8px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
-      cursor: pointer;
       border-left: 3px solid #7cd4fd;
+      cursor: pointer;
     }
+
     .card.done { border-left-color: #32d583; opacity: 0.75; }
-    .card.editing { cursor: default; border-left-color: #fdb022; }
+    .card.editing { border-left-color: #fdb022; cursor: default; }
+
     .row { display: flex; align-items: flex-start; gap: 8px; }
     .row .q { flex: 1; }
-    .q { font-size: 14px; font-weight: 600; line-height: 1.35; }
-    .a { font-size: 13px; color: #d0d5dd; margin-top: 6px; line-height: 1.4; }
-    .hint { font-size: 11px; color: #667085; margin-top: 6px; font-style: italic; }
-    .empty { font-size: 13px; color: #667085; line-height: 1.5; text-align: center; padding: 20px 8px; }
 
-    .src-btn {
-      display: inline-block;
-      margin-top: 8px;
+    .q { font-size: 14px; font-weight: 600; line-height: 1.35; }
+    .a { margin-top: 6px; font-size: 13px; line-height: 1.4; color: #d0d5dd; }
+
+    .hint {
+      margin-top: 6px;
       font-size: 11px;
+      font-style: italic;
       color: #667085;
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      text-decoration: underline;
-      font-family: inherit;
     }
-    .src-btn:hover { color: #7cd4fd; }
+
+    .empty {
+      padding: 20px 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #667085;
+      text-align: center;
+    }
+
+
+    /* ========== Card controls ========== */
 
     .del-btn {
       flex-shrink: 0;
-      width: 22px; height: 22px;
+      width: 22px;
+      height: 22px;
       padding: 0;
-      font-size: 16px; line-height: 1;
+      font-size: 16px;
+      line-height: 1;
       color: #667085;
       background: transparent;
       border: none;
       border-radius: 4px;
       cursor: pointer;
     }
+
     .del-btn:hover { color: #fda29b; background: #101828; }
+
+    .src-btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 0;
+      font-family: inherit;
+      font-size: 11px;
+      color: #667085;
+      background: none;
+      border: none;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .src-btn:hover { color: #7cd4fd; }
+    .src-btn.rm { margin-left: 12px; color: #7a5c5c; }
+    .src-btn.rm:hover { color: #fda29b; }
+
+
+    /* ========== Edit mode ========== */
 
     textarea {
       width: 100%;
       box-sizing: border-box;
       margin-top: 8px;
       padding: 8px;
+      min-height: 60px;
       font-family: inherit;
       font-size: 13px;
       color: #f2f4f7;
@@ -90,8 +198,23 @@
       border: 1px solid #344054;
       border-radius: 6px;
       resize: vertical;
-      min-height: 60px;
     }
+
+    .q-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      min-height: 44px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: #f2f4f7;
+      background: #101828;
+      border: 1px solid #344054;
+      border-radius: 6px;
+      resize: vertical;
+    }
+
     .save-btn {
       margin-top: 8px;
       padding: 6px 14px;
@@ -103,91 +226,95 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
     .save-btn:hover { background: #36bffa; }
 
-        .tool-btn.add {
-      color: #7cd4fd;
-      border-color: #164e63;
-      font-size: 15px;
-      line-height: 1;
-      padding: 3px 9px;
-    }
-    .q-input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 8px;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 600;
-      color: #f2f4f7;
-      background: #101828;
-      border: 1px solid #344054;
-      border-radius: 6px;
-      resize: vertical;
-      min-height: 44px;
-    }
 
-        .tool-btn.challenge { color: #d6bbfb; border-color: #4a1fb8; }
+    /* ========== Challenge mode ==========
+       One class on <header> locks every control except Challenge itself.
+       The :not() selector describes a category, so new buttons are
+       covered automatically.                                            */
 
-    #challenge { padding: 4px 0; }
-    .ch-progress {
-      font-size: 11px;
-      color: #667085;
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .ch-card {
-      background: #1d2939;
-      border-radius: 8px;
-      padding: 20px 16px;
-      min-height: 280px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      border-left: 3px solid #d6bbfb;
-    }
-    .ch-front { font-size: 16px; font-weight: 600; line-height: 1.4; }
-    .ch-back {
-      font-size: 14px;
-      color: #d0d5dd;
-      line-height: 1.5;
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid #344054;
-      white-space: pre-wrap;
-    }
-    .ch-hint {
-      font-size: 11px;
-      color: #667085;
-      text-align: center;
-      margin-top: 10px;
-      font-style: italic;
-    }
-    .ch-done { font-size: 15px; text-align: center; padding: 40px 12px; color: #98a2b3; }
-
-    header.in-challenge .tool-btn:not(.challenge) {
+    header.in-challenge .tool-btn:not(.challenge),
+    header.in-challenge ~ #titleBar {
       opacity: 0.35;
       pointer-events: none;
     }
 
-    .tool-btn.danger { color: #fda29b; border-color: #7a271a; }
-    .tool-btn.danger:hover:not(:disabled) { background: #55160c; }
-    header { flex-wrap: wrap; row-gap: 6px; }
+    #challenge {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    .ch-progress {
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: #667085;
+      text-align: center;
+    }
+
+    .ch-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 280px;
+      padding: 20px 16px;
+      background: #1d2939;
+      border-radius: 8px;
+      border-left: 3px solid #d6bbfb;
+    }
+
+    .ch-front { font-size: 16px; font-weight: 600; line-height: 1.4; }
+
+    .ch-back {
+      margin-top: 14px;
+      padding-top: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #d0d5dd;
+      white-space: pre-wrap;
+      border-top: 1px solid #344054;
+    }
+
+    .ch-hint {
+      margin-top: 10px;
+      font-size: 11px;
+      font-style: italic;
+      color: #667085;
+      text-align: center;
+    }
+
+    .ch-done {
+      padding: 40px 12px;
+      font-size: 15px;
+      color: #98a2b3;
+      text-align: center;
+    }
   </style>
 </head>
+
 <body>
-    <header>
-    <h1>ENTRIES</h1>
+  <header>
+    <h1 id="title">ENTRIES</h1>
     <button id="addBtn" class="tool-btn add" title="Add custom entry">+</button>
     <button id="importBtn" class="tool-btn" title="Import entries from a .tsv file">Import</button>
-    <button id="exportBtn" class="tool-btn" title="Export as .tsv (Tab-Separated Values) format">Export</button>
-    <input type="file" id="fileInput" accept=".tsv,.txt" hidden>
     <button id="challengeBtn" class="tool-btn challenge" title="Review entries as flashcards">Challenge</button>
     <button id="undoBtn" class="tool-btn" title="Undo delete" disabled>Undo</button>
     <button id="deleteAllBtn" class="tool-btn danger" title="Delete all entries">Delete All</button>
+    <input type="file" id="fileInput" accept=".tsv,.txt" hidden>
   </header>
+
+  <div id="titleBar">
+    <input type="text" id="setTitle" placeholder="Untitled set…" autocomplete="off"
+           title="Name this set — press Enter to export as .tsv">
+    <span class="ext">.tsv</span>
+  </div>
+
   <div id="list">Loading…</div>
   <div id="challenge" hidden></div>
+
   <script src="popup.js"></script>
 </body>
 </html>
