@@ -22,7 +22,7 @@ async function deleteAll() {
   await chrome.storage.local.set({ cards });
   render();
 
-  deleteAllBtn.textContent = `Deleted ${count}`;
+  deleteAllBtn.textContent = `-${count}`;
   deleteAllBtn.disabled = false;   // render() just disabled it — keep it readable
   setTimeout(() => {
     deleteAllBtn.textContent = "Delete All";
@@ -64,7 +64,7 @@ function render() {
 
   if (cards.length === 0) {
     list.innerHTML = `<p class="empty">No entries yet.<br>Highlight text on any page,
-      right-click → Make flashcard — or hit + to write your own.</p>`;
+      right-click → Make flashcard, or hit + to write your own.</p>`;
     return;
   }
 
@@ -86,7 +86,7 @@ function render() {
             <button class="del-btn" data-id="${card.id}" title="Delete entry">×</button>
           </div>
           <textarea class="answer-input" placeholder="Answer or note…">${escapeHTML(card.answer)}</textarea>
-          <div class="hint">Ctrl+Enter to save</div>
+          <div class="hint">Save: Ctrl+Enter</div>
           <button class="save-btn" data-id="${card.id}">Save</button>
         </div>`;
     }
@@ -310,8 +310,8 @@ function exitChallenge() {
 function renderChallenge() {
   if (deckIndex >= deck.length) {
     challengeView.innerHTML = `
-      <div class="ch-done">Done — ${deck.length} reviewed.<br>
-        <span class="ch-hint">Space to restart · Esc to exit</span></div>`;
+      <div class="ch-done">${deck.length} reviewed.<br>
+        <span class="ch-hint">Space to restart</span></div>`;
     return;
   }
 
