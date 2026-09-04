@@ -292,6 +292,20 @@
       color: #98a2b3;
       text-align: center;
     }
+
+      .tag {
+      flex-shrink: 0;
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #a4bcfd;
+      background: #1f235b;
+      border-radius: 10px;
+      white-space: nowrap;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   </style>
 </head>
 
@@ -307,7 +321,7 @@
   </header>
 
   <div id="titleBar">
-    <input type="text" id="setTitle" placeholder="Untitled set…" autocomplete="off"
+    <input type="text" id="setTitle" placeholder="Deck Title..." autocomplete="off"
            title="Name this set — press Enter to export as .tsv">
     <span class="ext">.tsv</span>
   </div>

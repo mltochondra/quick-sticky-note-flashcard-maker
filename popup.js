@@ -122,7 +122,10 @@ function renderCard(card) {
       </div>`;
   }
 
-  // source === null marks a custom entry — no source buttons to show.
+  const tagLabel = card.tag
+    ? `<span class="tag">${escapeHTML(card.tag)}</span>`
+    : "";
+
   const sourceButtons = card.source
     ? `<button class="src-btn" data-src="${escapeHTML(card.source)}">Copy source</button>
        <button class="src-btn rm" data-id="${card.id}">Remove source</button>`
@@ -136,6 +139,7 @@ function renderCard(card) {
     <div class="card ${card.answer ? "done" : ""}" data-id="${card.id}">
       <div class="row">
         <div class="q">${escapeHTML(card.question) || "<em>Untitled</em>"}</div>
+        ${tagLabel}
         <button class="del-btn" data-id="${card.id}" title="Delete entry">×</button>
       </div>
       ${body}
@@ -349,7 +353,8 @@ async function handleImport(e) {
   if (!file) return;
 
   const text = await file.text();
-  const imported = parseTSV(text);
+  const tag = file.name.replace(/\.[^.]+$/, "");   // "Ethics.tsv" → "Ethics"
+  const imported = parseTSV(text, tag);
 
   // Identity is question + answer. \u0000 separates them so that
   // {q:"ab", a:"c"} and {q:"a", a:"bc"} don't collide.
@@ -368,7 +373,7 @@ async function handleImport(e) {
   setTimeout(() => { importBtn.textContent = "Import"; }, 2000);
 }
 
-function parseTSV(text) {
+function parseTSV(text, tag) {
   let counter = 0;
 
   return text
@@ -377,11 +382,11 @@ function parseTSV(text) {
     .map(line => {
       const [question = "", answer = "", source = ""] = line.split("\t");
       return {
-        // Date.now() alone collides — the whole loop runs inside one millisecond.
         id: Date.now() + Math.floor(Math.random() * 1000) + (counter++),
         question: question.trim(),
         answer: answer.trim(),
         source: source.trim() || null,
+        tag,                    // view-only: never written to export
         created: new Date().toISOString()
       };
     })
